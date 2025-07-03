@@ -5,8 +5,8 @@ export default function LoginSelection() {
     <>
       <div className="min-h-screen  flex flex-col items-center justify-center font-sans relative overflow-hidden bg-white">
         {/* Soft glowing circles in background [] */}
-        <div className="absolute bg-[#0EBE7E] rounded-full w-[600px] h-[501px] md:w-[1722px] md:h-[1926px] blur-3xl top-0 right-0 opacity-[50%]"></div>
-        <div className="absolute bg-[#61CEFF] rounded-full w-[450px] md:w-[1440px] md:h-[1024px]  h-[350px] blur-2xl bottom-0 right-0 opacity-[72%]"></div>
+<div className="absolute bg-[#0EBE7E] rounded-full w-[450px] md:w-[1440px] md:h-[1024px]  h-[350px] blur-2xl bottom-96 left-[30%] opacity-[72%]"></div>
+<div className="absolute bg-[#61CEFF] rounded-full w-[450px] md:w-[1440px] md:h-[1024px]  h-[350px] blur-2xl top-[70%] right-[40%] opacity-[72%]"></div>
         
         {/* Center container */}
         <div className="relative w-96 bg-opacity-75 p-10 md:p-16 max-w-xs md:max-w-md text-center">
