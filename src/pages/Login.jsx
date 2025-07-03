@@ -22,7 +22,7 @@ export default function LoginSelection() {
           <div className='flex justify-center flex-row items-center gap-2 text-[#000000] my-4'>
             <hr className='border w-14'/>
           <h2 className="relative text-[#000000] font-medium text-2xl mb- after:content-[''] after:block after:border-b after:border-gray-300 after:w-16 after:mx-auto after:mt-2">
-            Login as
+            start as
           </h2>
           <hr className='border w-14'/>
           </div>
