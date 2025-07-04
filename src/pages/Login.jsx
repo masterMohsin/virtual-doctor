@@ -28,7 +28,7 @@ export default function LoginSelection() {
           </div>
           {/* Buttons */}
           <button className="w-full bg-[#0EBE7F] text-white text-3xl py-3 rounded-lg font-medium hover:bg-green-700 transition-colors mb-">
-            Doctor
+            Doctors
           </button>
           <p className="my-2 text-center text-[#000000] font-medium text-2xl">or</p>
           <button className="w-full bg-[#0EBE7F] text-white py-3 rounded-lg text-3xl font-medium hover:bg-green-700 transition-colors">
