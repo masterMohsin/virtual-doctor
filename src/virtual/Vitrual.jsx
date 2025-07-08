@@ -1,20 +1,26 @@
 import React from 'react'
-// import Login from '../pages/Login'
-import LoginSelection from '../pages/Login'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Dashboard from '../components/Dashboard'
+import Home from '../pages/Home'
+import Layout from '../layout/Layout'
+import FindDoctors from '../pages/FindDoctors'
 
 const Vitrual = () => {
   const router = createBrowserRouter([
     {
-      path : '/login',
-      element : <LoginSelection/>
-    },
-    {
-      path : '/dashboard',
-      element : <Dashboard/>
+      path : '/',
+      element : <Layout/>,
+      children : [
+        {
+          path : '/',
+          element : <Home/>
+        },
+        {
+          path : '/find-doctors',
+          element : <FindDoctors/>
+        }
+      ]
     }
-  ])
+  ])  
   return (
     <RouterProvider router={router}/>
   )
