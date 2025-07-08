@@ -4,9 +4,9 @@ export default function LoginSelection() {
   return (
     <>
       <div className="min-h-screen  flex flex-col items-center justify-center font-sans relative overflow-hidden bg-white">
-        {/* Soft glowing circles in background */}
-        <div className="absolute bg-[#61CEFFB8] rounded-full w-[600px] h-[501px] md:w-96 md:h-96 blur-3xl top-0 left-0 opacity-[30%]"></div>
-        <div className="absolute bg-[#0EBE7E4D] rounded-full w-[450px] h-[350px] blur-2xl bottom-0 right-0 opacity-[72%]"></div>
+        {/* Soft glowing circles in background [] */}
+<div className="absolute bg-[#0EBE7E] rounded-full w-[450px] md:w-[1440px] md:h-[1024px]  h-[350px] blur-2xl bottom-96 left-[30%] opacity-[72%]"></div>
+<div className="absolute bg-[#61CEFF] rounded-full w-[450px] md:w-[1440px] md:h-[1024px]  h-[350px] blur-2xl top-[70%] right-[40%] opacity-[72%]"></div>
         
         {/* Center container */}
         <div className="relative w-96 bg-opacity-75 p-10 md:p-16 max-w-xs md:max-w-md text-center">
@@ -22,7 +22,7 @@ export default function LoginSelection() {
           <div className='flex justify-center flex-row items-center gap-2 text-[#000000] my-4'>
             <hr className='border w-14'/>
           <h2 className="relative text-[#000000] font-medium text-2xl mb- after:content-[''] after:block after:border-b after:border-gray-300 after:w-16 after:mx-auto after:mt-2">
-            Login as
+            start as
           </h2>
           <hr className='border w-14'/>
           </div>
