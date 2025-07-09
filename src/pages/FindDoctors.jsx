@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { data as doctorsData } from "../config/data";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "./SearchBar";
  // Assuming you have a JSON file with doctor data
 
 const FindDoctors = () => {
