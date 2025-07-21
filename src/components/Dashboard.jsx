@@ -1,12 +1,23 @@
 import React, { useState } from "react";
+import { TbDental } from "react-icons/tb";
+import { GiNoseFront,GiKidneys } from "react-icons/gi";
+import { LuBrain,LuBone  } from "react-icons/lu";
+
+
+import { MdHearing } from "react-icons/md";
 import {
 
   FaSearch,
   FaCalendarAlt,
   FaClock,
+  FaEye ,
 } from "react-icons/fa";
 import SearchBar from "./SearchBar";
+
 import { useNavigate } from "react-router-dom";
+import { categoryIcons } from "../config/category-icons";
+
+
 
 const Dashboard = () => {
   const [search, setSearch] = useState("");
@@ -104,17 +115,25 @@ const Dashboard = () => {
         <div className="bg-[#F0EEEE] shadow-lg  p-4 rounded-xl  mb-4">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Category</h3>
-            <button className="text-blue-500 text-sm">See all &gt;</button>
+            <button  className="text-blue-500 text-sm cursor-pointer">See all &gt;</button>
           </div>
+
           <div className="flex flex-wrap justify-between">
-            {[...Array(12)].map((_, i) => (
-              <div
-                key={i}
+            {categoryIcons.map((cat, index) => {
+              return (
+                <>
+                <div
+                key={cat.id}
                 className="bg-indigo-500 text-white p-3 rounded-full w-16 h-16 flex items-center justify-center"
               >
-                🩺
+                <div>
+                  {cat.icon && <cat.icon size={32} />}
+                </div>
               </div>
-            ))}
+                </>
+              )
+              
+            })}
           </div>
         </div>
 
@@ -122,7 +141,7 @@ const Dashboard = () => {
         <div className="bg-blue-100 p-1 pl-4 pb-3 rounded-xl shadow">
           <div className="flex justify-between mb-1">
             <h3 className="font-semibold">Popular Doctor</h3>
-            <button className="text-blue-500 text-sm">See all &gt;</button>
+            <button onClick={() => navigate('/popular-doctors')} className="text-blue-500 text-sm cursor-pointer">See all &gt;</button>
           </div>
           <div className="flex flex-wrap justify-evenly">
             {[...Array(6)].map((_, i) => (

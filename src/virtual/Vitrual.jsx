@@ -3,6 +3,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from '../pages/Home'
 import Layout from '../layout/Layout'
 import FindDoctors from '../pages/FindDoctors'
+import PopularDoctors from '../pages/PopularDoctors'
+import SelectTime from '../pages/SelectTime'
 
 const Vitrual = () => {
   const router = createBrowserRouter([
@@ -17,7 +19,16 @@ const Vitrual = () => {
         {
           path : '/find-doctors',
           element : <FindDoctors/>
-        }
+        },
+        {
+          path : '/find-doctors/:id/select-time',
+          element : <SelectTime/>
+        },
+        {
+          path : '/popular-doctors',
+          element : <PopularDoctors/>
+        },
+        
       ]
     }
   ])  
