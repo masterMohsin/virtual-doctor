@@ -32,6 +32,14 @@ const FindDoctors = () => {
     }
   };
 
+  const toggleLike = (id) => {
+  const updated = doctors.map(doctor =>
+    doctor.id === id ? { ...doctor, liked: !doctor.liked } : doctor
+  );
+  setDoctors(updated);
+};
+
+
   const handleBookNow = (doctorId) => {
     // Navigate to select time for the doctor
     navigate(`/find-doctors/${doctorId}/select-time`);
@@ -96,10 +104,17 @@ const FindDoctors = () => {
             </div>
             <div className="flex flex-col items-end gap-2">
               {doctor.liked ? (
-                <FaHeart className="text-red-500" />
-              ) : (
-                <FaRegHeart className="text-gray-400" />
-              )}
+  <FaHeart
+    className="text-red-500 cursor-pointer"
+    onClick={() => toggleLike(doctor.id)}
+  />
+) : (
+  <FaRegHeart
+    className="text-gray-400 cursor-pointer"
+    onClick={() => toggleLike(doctor.id)}
+  />
+)}
+
               <button
                 className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
                 onClick={() => handleBookNow(doctor.id)}
