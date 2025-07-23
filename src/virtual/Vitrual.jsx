@@ -5,6 +5,7 @@ import Layout from '../layout/Layout'
 import FindDoctors from '../pages/FindDoctors'
 import PopularDoctors from '../pages/PopularDoctors'
 import SelectTime from '../pages/SelectTime'
+import Appointements from '../pages/Appointements'
 
 const Vitrual = () => {
   const router = createBrowserRouter([
@@ -28,7 +29,10 @@ const Vitrual = () => {
           path : '/popular-doctors',
           element : <PopularDoctors/>
         },
-        
+        {
+          path : '/appointements',
+          element : <Appointements/>
+        }
       ]
     }
   ])  

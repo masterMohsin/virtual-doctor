@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { data as doctorsData } from "../config/data";
@@ -9,6 +9,14 @@ const FindDoctors = () => {
   const [doctors, setDoctors] = useState(doctorsData);
   const navigate = useNavigate();
 
+  const inputRef = useRef(null)
+  useEffect(() => {
+    if(inputRef.current) {
+      inputRef.current.focus()
+    }
+  },[])
+  
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim() === "") {
@@ -16,8 +24,10 @@ const FindDoctors = () => {
     } else {
       // Only show doctors whose name starts with the search value (case-insensitive)
       const filteredDoctors = doctorsData.filter(doctor =>
-        doctor.name.toLowerCase().startsWith(search.toLowerCase())
+        doctor.name.toLowerCase().includes(search.toLowerCase())
       );
+
+    
       setDoctors(filteredDoctors);
     }
   };
@@ -38,6 +48,7 @@ const FindDoctors = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search for doctors..."
+            
           />
         </form>
         <h2 className="text-xl font-semibold mb-4">No doctors found</h2>
@@ -56,6 +67,7 @@ const FindDoctors = () => {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search for doctors..."
+          ref={inputRef}
         />
       </form>
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">

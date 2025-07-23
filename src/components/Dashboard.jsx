@@ -30,7 +30,7 @@ const Dashboard = () => {
   }
   } 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen md:w-full bg-white">
+    <div className="flex flex-col md:flex-row min-h-screen md:w-full bg-white overflow-hidden">
     
       <div className="flex-1 p-4 md:p-6 overflow-hidden">
         {/* Top bar */}
@@ -42,6 +42,7 @@ const Dashboard = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search for doctors..."
+            onClick = {() => navigate('/find-doctors')}
           />
         </form>
 
@@ -115,7 +116,7 @@ const Dashboard = () => {
         <div className="bg-[#F0EEEE] shadow-lg  p-4 rounded-xl  mb-4">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold">Category</h3>
-            <button  className="text-blue-500 text-sm cursor-pointer">See all &gt;</button>
+            {/* <button  className="text-blue-500 text-sm cursor-pointer">See all &gt;</button> */}
           </div>
 
           <div className="flex flex-wrap justify-between">

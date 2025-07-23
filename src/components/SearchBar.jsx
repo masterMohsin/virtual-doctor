@@ -2,13 +2,15 @@ import React from "react";
 import { FaSearch } from "react-icons/fa";
 
 
-const SearchBar = ({ placeholder = "Search...", value, onChange }) => (
+const SearchBar = ({ placeholder = "Search...", value, onChange,onClick,ref }) => (
   <div className="relative w-full">
     <input
       type="text"
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      onClick={onClick}
+      ref={ref}
       className="w-full px-4 py-4 rounded-xl shadow-xl bg-[#FFFFFF]"
     />
     <FaSearch className="absolute top-5 right-3 text-gray-400" />

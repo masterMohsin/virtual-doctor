@@ -7,7 +7,7 @@ const Sidebar = () => {
 
   const sidebarItems = [
     { item: "Home", icon: <FaHome />, path: "/" },
-    { item: "Appointments", icon: <FaGoogleDrive />, path: "/appointments" },
+    { item: "Appointments", icon: <FaGoogleDrive />, path: "/appointements" },
     { item: "Profile", icon: <FaUser />, path: "/profile" },
   ];
 
