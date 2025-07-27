@@ -1,42 +1,160 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function LoginSelection() {
+const Login = () => {
+  const navigate = useNavigate()
+  const [login,setLogin] = useState({
+    email : "",
+    password : ""
+  })
+  const messages = [
+    "Contact with doctors Globally..",
+    "Make your Appointment online..",
+    "Make your life Easy..",
+  ];
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typedText, setTypedText] = useState("");
+
+  useEffect(() => {
+    const current = messages[messageIndex];
+    let timeout;
+
+    if (!isDeleting) {
+      setTypedText(current.substring(0, charIndex));
+      if (charIndex < current.length) {
+        timeout = setTimeout(() => setCharIndex(charIndex + 1), 80);
+      } else {
+        timeout = setTimeout(() => setIsDeleting(true), 1200);
+      }
+    } else {
+      setTypedText(current.substring(0, charIndex));
+      if (charIndex > 0) {
+        timeout = setTimeout(() => setCharIndex(charIndex - 1), 40);
+      } else {
+        setIsDeleting(false);
+        setMessageIndex((messageIndex + 1) % messages.length);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [charIndex, isDeleting, messageIndex]);
+
+  const handleInput = (e) => {
+    const {name,value} = e.target;
+
+    setLogin({
+      ...login,
+      [name] : value
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log(login);
+    
+  }
+
   return (
-    <>
-      <div className="min-h-screen  flex flex-col items-center justify-center font-sans relative overflow-hidden bg-white">
-        {/* Soft glowing circles in background [] */}
-<div className="absolute bg-[#0EBE7E] rounded-full w-[450px] md:w-[1924px] md:h-[1924px]  h-[350px] blur-2xl bottom-[30%]  left-[30%]  opacity-[72%]"></div>
-<div className="absolute bg-[#61CEFF] rounded-full w-[450px] md:w-[1924px] md:h-[1924px]  h-[350px] blur-2xl top-[30%] right-[30%] opacity-[72%]"></div>
-        
-        {/* Center container */}
-        <div className="relative w-[50%]  p-10 md:p-16 text-center bg-white/10 backdrop-blur-md rounded-xl border border-white/30 shadow-lg">
-          {/* Medical cross icon with heartbeat */}
-          <div className="flex justify-center mb-10 bg-[#0EBE7E4D] opacity-[30%] rounded-full w-80 h-72 blur-md">
-            {/* <svg className="w-20 h-20 stroke-green-600 stroke-2" fill="none" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 64 64">
-              <path d="M32 4v56M12 32h40M24 44h16"/>
-              <path d="M18 32l6-12 7 14 5-14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg> */}
-            <img src="./imgs/plus-logo.png" alt="" />
-          </div>
-          {/* Title with line */}
-          <div className='flex justify-center flex-row items-center gap-2 text-[#000000] my-4'>
-            <hr className='border w-14'/>
-          <h2 className="relative text-[#000000] font-medium text-2xl mb- after:content-[''] after:block after:border-b after:border-gray-300 after:w-16 after:mx-auto after:mt-2">
-            start as
+    <div className="flex flex-col md:flex-row w-full h-screen bg-[#0f0f0f] text-white">
+      {/* Left Section */}
+      <div className="w-full md:w-1/2 bg-[#0EBE7F] p-10 flex flex-col justify-center items-start h-full relative">
+        <div className="bg-white/10 backdrop-blur-md p-4 rounded-full mb-6 shadow-xl">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-14 h-14 text-white"
+            fill="white"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M19.4133 4.89862L14.5863 2.17544C12.9911 1.27485 11.0089 1.27485 9.41368 2.17544L4.58674 4.89862C2.99153 5.7992 2 7.47596 2 9.2763V14.7235C2 16.5238 2.99153 18.2014 4.58674 19.1012L9.41368 21.8252C10.2079 22.2734 11.105 22.5 12.0046 22.5C12.6952 22.5 13.3874 22.3657 14.0349 22.0954C14.2204 22.018 14.4059 21.9273 14.5872 21.8252L19.4141 19.1012C19.9765 18.7831 20.4655 18.3728 20.8651 17.8825C21.597 16.9894 22 15.8671 22 14.7243V9.27713C22 7.47678 21.0085 5.7992 19.4133 4.89862Z"
+            />
+          </svg>
+        </div>
+
+        <div>
+          <h1 className="text-5xl font-extrabold leading-tight drop-shadow-md">
+            Welcome to
+          </h1>
+          <h2 className="text-4xl font-bold text-white mt-2 tracking-wide">
+            Virtual Doctor
           </h2>
-          <hr className='border w-14'/>
-          </div>
-          {/* Buttons */}
-          <button className="w-[60%] bg-[#0EBE7F] text-white text-3xl py-3 rounded-lg font-medium hover:bg-green-700 transition-colors mb-">
-            Doctor
-          </button>
-          <p className="my-2 text-center text-[#000000] font-medium text-2xl">or</p>
-          <button className="w-[60%] bg-[#0EBE7F] text-white py-3 rounded-lg text-3xl font-medium hover:bg-green-700 transition-colors">
-            Patient
-          </button>
+          <p className="mt-4 text-lg font-medium text-white/90 max-w-md">
+            Your smart healthcare companion. Connect, consult, and care — all in
+            one place.
+          </p>
+        </div>
+
+        <div className="h-10 text-lg mt-8 text-white font-mono">
+          <span>{typedText}</span>
+          <span className="animate-pulse">|</span>
         </div>
       </div>
-    </>
-  );
-}
 
+      {/* Right Section */}
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-[#0f0f0f] relative">
+        {/* Animated Waves */}
+        <div className="absolute w-[540px] h-[700px] bg-gradient-to-tr from-green-400 via-emerald-500 to-cyan-400 opacity-60 rounded-[40%] -left-1/2 -top-[70%] animate-spin-slow z-0"></div>
+        <div className="absolute w-[540px] h-[700px] bg-gradient-to-tr from-green-400 via-emerald-500 to-cyan-400 opacity-60 rounded-[40%] -left-1/2 top-[30%] animate-spin-slow z-0 delay-1000"></div>
+
+        <div className="relative w-full max-w-md bg-white/5 rounded-2xl border border-white/10 backdrop-blur-lg p-8 overflow-hidden mx-4 z-10">
+          <div className="text-white text-center mb-6">
+            <h2 className="text-2xl font-semibold">Login to Your Account</h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              onChange={(e) => handleInput(e)}
+              value={login.value}
+              required
+              className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              name="password"
+              onChange={(e) => handleInput(e)}
+              value={login.value}
+              required
+              className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
+            />
+
+            <div className="flex items-center justify-between text-sm text-white/80">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="accent-green-500" />
+                Remember me
+              </label>
+              <p
+                onClick={() => navigate('/forgot-password')}
+                className="text-green-400 hover:underline cursor-pointer"
+              >
+                Forgot Password?
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="bg-emerald-500 hover:bg-emerald-400 transition-colors text-white py-2 rounded-lg font-semibold text-xl cursor-pointer"
+            >
+              Login
+            </button>
+
+            <p className="text-center text-white/60 text-sm cursor-pointer">
+              Don't have an account?{" "}
+              <p onClick={() => navigate('/register')} className="text-green-400 underline">
+                Sign up
+              </p>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

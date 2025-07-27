@@ -1,7 +1,9 @@
 export const data = [
   {
     id: 1,
+    img: "/imgs/azeem.jpg",
     name: "Dr. Shruti Kedia",
+    
     specialty: "Heart Specialist",
     rating: "97%",
     experience: "4 Years Experience",
@@ -11,7 +13,9 @@ export const data = [
   },
   {
     id: 2,
+    img: "/imgs/ayesha.jpg",
     name: "Dr. Watanamuk",
+    
     specialty: "Tooth Dentist",
     rating: "91%",
     experience: "5 Years Experience",
@@ -21,7 +25,9 @@ export const data = [
   },
   {
     id: 3,
+    img: "/imgs/kimjowon.jpeg",
     name: "Dr. Crownower",
+    
     specialty: "Tooth Dentist",
     rating: "94%",
     experience: "8 Years Experience",
@@ -31,7 +37,9 @@ export const data = [
   },
   {
     id: 4,
+    img: "/imgs/sweety.jpg",
     name: "Dr. Balestra",
+  
     specialty: "Tooth Dentist",
     rating: "89%",
     experience: "3 Years Experience",
@@ -41,7 +49,9 @@ export const data = [
   },
   {
     id: 5,
+    img: "/imgs/jony.jpg",
     name: "Dr. Balestra",
+    
     specialty: "Tooth Dentist",
     rating: "89%",
     experience: "3 Years Experience",
@@ -51,7 +61,9 @@ export const data = [
   },
   {
     id: 6,
+    img: "/imgs/azeem.jpg",
     name: "Dr. Balestra",
+    
     specialty: "Tooth Dentist",
     rating: "89%",
     experience: "3 Years Experience",
@@ -61,7 +73,9 @@ export const data = [
   },
   {
     id: 7,
+    img: "/imgs/kimjowon.jpeg",
     name: "Dr. Balestra",
+    
     specialty: "Tooth Dentist",
     rating: "89%",
     experience: "3 Years Experience",

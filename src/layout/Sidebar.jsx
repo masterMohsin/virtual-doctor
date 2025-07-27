@@ -1,27 +1,33 @@
 import React, { useState } from "react";
 import { FaBars, FaHome, FaUser, FaGoogleDrive } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(true);
 
   const sidebarItems = [
-    { item: "Home", icon: <FaHome />, path: "/" },
-    { item: "Appointments", icon: <FaGoogleDrive />, path: "/appointments" },
+    { item: "Home", icon: <FaHome />, path: "/virtual-doctor" },
+    { item: "Appointments", icon: <FaGoogleDrive />, path: "/appointements" },
     { item: "Profile", icon: <FaUser />, path: "/profile" },
   ];
 
+  const handleLogoutBtn = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    navigate('/login-selection')
+  }
   return (
     <>
       {/* Sidebar for Desktop */}
       <div
         className={`${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } hidden md:block fixed top-0 left-0 z-40 min-h-screen w-auto bg-[#0EBE7F] p-4 rounded-lg m-3 shadow-lg`}
+        } hidden md:block fixed top-0 left-0 z-40 min-h-screen w-60  bg-[#0EBE7F] p-4 rounded-lg m-3 shadow-lg`}
       >
         {/* Logo */}
         <div className="mb-10 flex justify-center">
-          <img className="w-20" src="/imgs/plus-logo.png" alt="Logo" />
+          <img className="w-48" src="/imgs/plus-logo.png" alt="Logo" />
         </div>
 
         {/* Navigation Items */}
@@ -32,7 +38,7 @@ const Sidebar = () => {
                 to={items.path}
                 className={({ isActive }) =>
                   `flex items-center gap-4 text-xl text-white hover:text-gray-100 cursor-pointer ${
-                    isActive ? "font-bold underline text-blue-500" : ""
+                    isActive ? "font-bold  text-blue-500" : ""
                   }`
                 }
                 end={items.path === "/"}
@@ -47,7 +53,7 @@ const Sidebar = () => {
         {/* Logout */}
         <div className="absolute bottom-6 left-6 flex items-center gap-2 text-white cursor-pointer">
           <img src="/imgs/Logout.png" alt="Logout" className="h-6" />
-          <button className="text-xl font-semibold cursor-pointer">Logout</button>
+          <button onClick={handleLogoutBtn} className="text-xl font-semibold cursor-pointer">Logout</button>
         </div>
       </div>
 

@@ -12,7 +12,7 @@ const Layout = () => {
         <Sidebar />
       </div>
       {/* Main Content */}
-      <div className="flex-1 w-full  flex  flex-col min-h-screen">
+      <div className="flex-1 md:ml-10 w-full  flex  flex-col min-h-screen">
         <main className="flex-1">
           <Outlet />
         </main>

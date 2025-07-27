@@ -1,0 +1,48 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function LoginSelection() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <div className="md:min-h-screen  font-sans  overflow-hidden ">
+           
+        {/* Soft glowing circles in background [] */}
+<div className="absolute bg-[#0EBE7E] rounded-full w-[450px] md:w-[1924px] md:h-[1924px]  h-[350px] blur-2xl -bottom-[10%] md:bottom-[30%]  left-[60%] md:left-[30%]   md:opacity-[72%]"></div>
+<div className="absolute bg-[#61CEFF] rounded-full w-[450px] md:w-[1924px] md:h-[1924px]  h-[350px] blur-2xl -top-[10%]  md:top-[30%] right-[60%] md:right-[30%] opacity-[72%]"></div>
+        
+        {/* Center container */}
+           
+        <div className="center flex justify-center h-screen items-center">
+          <div className="relative w-[50%]  p-10 md:p-16 text-center md:bg-white/10 md:backdrop-blur-md md:rounded-xl md:border md:border-white/30 md:shadow-lg">
+          {/* Medical cross icon with heartbeat */}
+          <div className="img flex justify-center ">
+            <img src="/imgs/plus-logo.png" className='w-40 h-40 object-contain' alt="" />
+          </div>
+
+
+          {/* Title with line */}
+          <div className='flex justify-center   items-center  text-[#000000] my-4'>
+            <hr className='border w-24'/>
+            <h2 className='w-30 md:w-20 '>start as</h2>
+          
+          <hr className='border w-24'/>
+          </div>
+          
+          {/* Buttons */}
+          <button className="w-[60%] bg-[#0EBE7F] text-white text-3xl py-3 rounded-lg font-medium hover:bg-green-700 transition-colors mb-">
+            Doctor
+          </button>
+          <p className="my-2 text-center text-[#000000] font-medium text-2xl">or</p>
+          <button onClick={() => navigate('/login')} className="w-[60%] bg-[#0EBE7F] text-white py-3 rounded-lg text-3xl font-medium hover:bg-green-700 transition-colors">
+            Patient
+          </button>
+          
+          
+        </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
