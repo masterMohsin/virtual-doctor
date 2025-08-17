@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
-import { initialDoctors } from "../config/popular-doctor";
+import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { initialDoctors } from "../../config/popular-doctor";
 
 const StarRating = ({ rating }) => {
   const fullStars = Math.round(rating);
@@ -50,7 +50,7 @@ const PopularDoctors = () => {
   };
 
   const handleVerify = (doctorId) => {
-    navigate(`/popular-doctors/${doctorId}`)
+    navigate(`/patient/popular-doctors/${doctorId}`)
   }
 
     
@@ -63,7 +63,7 @@ const PopularDoctors = () => {
           <div
             onClick={() => handleVerify(doc.id)}
             key={doc.id}
-            className="bg-white shadow-md rounded-xl p-4 flex flex- sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 relative"
+            className="bg-white shadow-md rounded-xl p-4 flex flex- sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 relative hover:scale-105 cursor-pointer duration-200 transition-all"
           >
             <figure >
               <img

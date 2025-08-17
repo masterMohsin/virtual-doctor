@@ -4,12 +4,26 @@ import { useNavigate } from 'react-router-dom';
 export default function LoginSelection() {
   const navigate = useNavigate();
 
+  const handleLogin = (role) => {
+    // Save the selected role for future visits
+    localStorage.setItem("userRole", role);
+
+    // Navigate to login page of that role
+    navigate(`/${role}/login`);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (token) {
-      navigate("/home", { replace: true });
+    const userRole = localStorage.getItem("userRole");
+
+    if (token && userRole) {
+      // If logged in, go directly to dashboard
+      navigate(`/${userRole}/dashboard`, { replace: true });
+    } else if (!token && userRole) {
+      // If not logged in but role is saved, go to its login page
+      navigate(`/${userRole}/login`, { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-white overflow-hidden">
@@ -35,8 +49,8 @@ export default function LoginSelection() {
 
           {/* Buttons */}
           <button
+            onClick={() => handleLogin("doctor")}
             className="w-[60%] bg-[#0EBE7F] text-white text-2xl py-3 cursor-pointer rounded-lg font-medium hover:bg-green-700 transition mb-4"
-            
           >
             Doctor
           </button>
@@ -44,7 +58,7 @@ export default function LoginSelection() {
           <p className="my-2 text-center text-black font-medium text-xl">or</p>
 
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => handleLogin("patient")}
             className="w-[60%] bg-[#0EBE7F] text-white py-3 cursor-pointer rounded-lg text-2xl font-medium hover:bg-green-700 transition"
           >
             Patient
@@ -54,3 +68,4 @@ export default function LoginSelection() {
     </div>
   );
 }
+  

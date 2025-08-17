@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TbDental } from "react-icons/tb";
 import { GiNoseFront,GiKidneys } from "react-icons/gi";
 import { LuBrain,LuBone  } from "react-icons/lu";
@@ -16,19 +16,41 @@ import SearchBar from "./SearchBar";
 
 import { useNavigate } from "react-router-dom";
 import { categoryIcons } from "../config/category-icons";
+import axios from "axios";
 
 
 
-const Dashboard = () => {
+const PatientDashboard = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if(search.trim() !== "") {
-      navigate(`/find-doctors?search=${encodeURIComponent(search)}`);
+      navigate(`/patient/find-doctors?search=${encodeURIComponent(search)}`);
   }
-  } 
+  }
+
+  useEffect(() => {
+    const user = async () => {
+      try {
+        const url = import.meta.env.VITE_API_URL;
+        const res = await axios.get(`${url}/api/users/get-patient`,{
+          withCredentials : true
+        })
+        console.log(res.data.patient.name);
+        
+        if(res.data.success) {
+          setUserData(res.data.patient);
+        }
+      } catch (error) {
+        console.log(error.message);
+        
+      }
+    }
+    user();
+  },[])
   return (
     <div className="w-full  flex flex-col  md:flex-row min-h-screen md:w-full ">
     
@@ -42,7 +64,7 @@ const Dashboard = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search for doctors..."
-            onClick={() => navigate('/find-doctors')}
+            onClick={() => navigate('/patient/find-doctors')}
           />
         </form>
 
@@ -103,7 +125,7 @@ const Dashboard = () => {
           {/** profile card */}
           <div className="profile -z-10 w-full md:w-[25rem]  absolute rounded-b-2xl md:rounded-2xl top-0 h-42 md:h-60 md:top-4 bg-[#5852F2] md:relative flex justify-evenly items-center text-white ">
             <div className="mt-4 md:text-center mb-2">
-              <p>Hi Mohsin Muneer</p>
+              <p>Hi {userData?.fullName}</p>
               <p className="font-semibold text-3xl md:text-lg sm:text-xl">Find Your Doctor</p>
               
             </div>
@@ -130,13 +152,15 @@ const Dashboard = () => {
         return (
           <div
             key={cat.id}
-            className={`${isHiddenOnMobile} items-center justify-center w-16 h-16 rounded-full bg-indigo-500 text-white`}
+            className={`${isHiddenOnMobile} items-center justify-center w-16 h-16 cursor-pointer rounded-full bg-indigo-500 text-white`}
+            onClick={() => navigate(`/patient/find-doctors?category=${cat.id}`)}
+
           >
             <cat.icon size={28} />
           </div>
         );
       })}
-    </div>
+    </div>  
         </div>
 
         {/* Popular Doctors Section */}
@@ -144,7 +168,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-bold text-xl">Popular Doctor</h3>
         <button
-          onClick={() => navigate("/popular-doctors")}
+          onClick={() => navigate("/patient/popular-doctors")}
           className="text-blue-500 text-sm font-medium cursor-pointer"
         >
           See all &gt;
@@ -180,4 +204,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default PatientDashboard;

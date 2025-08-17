@@ -1,13 +1,11 @@
 import React from 'react'
-import Dashboard from '../components/Dashboard'
-import Sidebar from '../layout/Sidebar'
+import PatientDashboard from '../components/PatientDashboard'
 
 const Home = () => {
   return (
     <>
       <div>     
-
-          <Dashboard/>
+          <PatientDashboard/>
         </div>
       
     </>

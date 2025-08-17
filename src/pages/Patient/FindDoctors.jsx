@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { data as doctorsData } from "../config/data";
-import SearchBar from "../components/SearchBar";
+import { data as doctorsData } from "../../config/data.js";
+import SearchBar from "../../components/SearchBar.jsx";
+// import SearchBar from "../components/SearchBar";
 
 const LOCAL_STORAGE_KEY = "findDoctorsList";
 
@@ -47,7 +48,7 @@ const FindDoctors = () => {
   };
 
   const handleBookNow = (doctorId) => {
-    navigate(`/find-doctors/${doctorId}/select-time`);
+    navigate(`/patient/find-doctors/${doctorId}/select-time`);
   };
 
   if (doctors.length === 0) {

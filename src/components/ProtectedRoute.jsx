@@ -1,14 +1,17 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = localStorage.getItem("authToken");
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { user } = useAuth();
 
-  if (!isLoggedIn) {
-    return <Navigate to="/login-selection" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
-  return children;
+  return allowedRoles.includes(user.role) ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/login" replace />
+  );
 };
 
 export default ProtectedRoute;
