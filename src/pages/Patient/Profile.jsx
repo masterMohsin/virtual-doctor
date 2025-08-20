@@ -15,9 +15,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
       try {
         const res = await axios.get(`${url}/api/users/get-patient`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          
           withCredentials: true,
         });
         if (res.data.success) {
@@ -303,13 +301,13 @@ const Profile = () => {
             {isEditing ? (
               <textarea
                 name="address"
-                value={formData.address || ""}
+                value={formData?.address || ""}
                 onChange={handleChange}
                 rows={3}
                 className="border border-gray-300 p-2 mt-1 w-full rounded-md"
               />
             ) : (
-              <h2 className="text-gray-600 text-xl">{formData.address}</h2>
+              <h2 className="text-gray-600 text-xl">{formData?.address}</h2>
             )}
           </div>
         </div>

@@ -35,9 +35,10 @@ const Sidebar = () => {
   ];
 
   const handleLogoutBtn = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("userRole");
-    navigate("/");
+    navigate(`/`);
+
   };
 
   return (

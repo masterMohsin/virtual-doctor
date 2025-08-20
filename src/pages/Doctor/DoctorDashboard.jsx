@@ -1,16 +1,39 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { FaCalendarAlt, FaClock } from "react-icons/fa";
 
 const DoctorDashboard = () => {
+  const [userData,setUserData] = useState(null)
+
+  const user = async () => {
+    try {
+      const url = import.meta.env.VITE_API_URL;
+      const res = await axios.get(`${url}/api/users/get-doctor`, {
+        withCredentials: true,
+      });
+      console.log(res.data.doctor);
+      
+      if (res.data.success) {
+        setUserData(res.data.doctor);
+      }
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+  }
+
+  useEffect(() => {
+    user()
+  },[])
   return (
     <div className="p-4 space-y-6">
       {/* Top Bar */}
       <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow">
         <div className="text-xl md:text-2xl font-semibold">
-          Welcome back, <span className="text-blue-600">Dr. Zain</span>
+          Welcome back, <span className="text-blue-600">{userData?.name}</span>
         </div>
         <img
-          src="https://img.freepik.com/free-photo/portrait-doctor.jpg"
+          src={userData?.profileImage || "/imgs/default-profile.png"}
           alt="Doctor"
           className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover"
         />

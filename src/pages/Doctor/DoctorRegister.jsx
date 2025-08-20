@@ -60,7 +60,7 @@ const DoctorRegister = () => {
   }, []);
 
   const [profileImage, setProfileImage] = useState(null);
-  const [degreeImage, setDegreeImage] = useState(null);
+  const [degreeCertificate, setDegreeCertificate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -72,7 +72,7 @@ const DoctorRegister = () => {
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (name === "profileImage") setProfileImage(files[0]);
-    if (name === "degreeImage") setDegreeImage(files[0]);
+    if (name === "degreeCertificate") setDegreeCertificate(files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -96,17 +96,20 @@ const DoctorRegister = () => {
       if (value !== null && value !== undefined) formData.append(key, value);
     });
     if (profileImage) formData.append("profileImage", profileImage);
-    if (degreeImage) formData.append("degreeImage", degreeImage);
+    if (degreeCertificate) formData.append("degreeCertificate", degreeCertificate);
     try {
       const BASE_URL = import.meta.env.VITE_API_URL;
       if (!BASE_URL) throw new Error("API URL not configured");
-      const response = await axios.post(`${BASE_URL}/api/auth/register-doctor`, formData);
+      const response = await axios.post(`${BASE_URL}/api/auth/register-doctor`, formData, { 
+        headers : { "Content-Type": "multipart/form-data" },
+        withCredentials: true
+      });
       const data = response.data;
       if (data.success) {
-        localStorage.setItem("user", JSON.stringify(data));
+        // localStorage.setItem("user", JSON.stringify(data));
         setSuccess("Registration successful!");
 
-        setTimeout(() => navigate("/doctor/dashboard"), 1000);
+        setTimeout(() => navigate("/doctor/login"), 1000);
       } else {
         setError(data.message || "Registration failed");
         setSuccess("");
@@ -200,8 +203,7 @@ const DoctorRegister = () => {
                 <label htmlFor="degreeImage" className="flex items-center gap-2 cursor-pointer hover:text-green-300" aria-label="Upload degree image">
                   🎓 Degree Image
                 </label>
-                <input type="file" id="degreeImage" name="degreeImage" className="hidden" onChange={handleFileChange} aria-label="Degree image upload" />
-                {degreeImage && <span className="ml-2 text-xs text-green-300">{degreeImage.name}</span>}
+                <input type="file" id="degreeCertificate" name="degreeCertificate" />{degreeCertificate && <span>{degreeCertificate.name}</span>}
               </div>
 
               {/* Standard Fields */}

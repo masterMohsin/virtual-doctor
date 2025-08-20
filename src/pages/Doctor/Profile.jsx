@@ -6,6 +6,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({});
   const [editing, setEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [degreeCertificate, setDegreeCertificate] = useState(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -27,11 +28,27 @@ const Profile = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // handle consultationHours nested object
+    if (name === "consultationStart" || name === "consultationEnd") {
+      setFormData((prev) => ({
+        ...prev,
+        consultationHours: {
+          ...prev.consultationHours,
+          [name === "consultationStart" ? "start" : "end"]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImageChange = (e) => {
     setProfileImage(e.target.files[0]);
+  };
+
+  const handleDegreeChange = (e) => {
+    setDegreeCertificate(e.target.files[0]);
   };
 
   const handleSave = async () => {
@@ -39,11 +56,32 @@ const Profile = () => {
       const url = import.meta.env.VITE_API_URL;
       const formDataToSend = new FormData();
 
+      // Use correct field names for backend
       for (let key in formData) {
-        formDataToSend.append(key, formData[key]);
+        if (key === "consultationHours") {
+          formDataToSend.append("consultationHours[start]", formData.consultationHours?.start || "");
+          formDataToSend.append("consultationHours[end]", formData.consultationHours?.end || "");
+        } else if (key === "name") {
+          formDataToSend.append("fullName", formData[key]);
+        } else if (key === "dob") {
+          formDataToSend.append("dateOfBirth", formData[key]);
+        } else if (key === "phone") {
+          formDataToSend.append("phoneNumber", formData[key]);
+        } else if (key === "affiliation") {
+          formDataToSend.append("hospitalAffiliation", formData[key]);
+        } else if (key === "yearsOfExperience") {
+          formDataToSend.append("experience", formData[key]);
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
       }
+
       if (profileImage) {
         formDataToSend.append("profileImage", profileImage);
+      }
+
+      if (degreeCertificate) {
+        formDataToSend.append("degreeCertificate", degreeCertificate);
       }
 
       const res = await axios.put(`${url}/api/users/update-doctor`, formDataToSend, {
@@ -53,7 +91,10 @@ const Profile = () => {
 
       if (res.data.success) {
         setUserData(res.data.doctor);
+        setFormData(res.data.doctor);
         setEditing(false);
+        setProfileImage(null);
+        setDegreeCertificate(null);
       }
     } catch (error) {
       console.log(error.message);
@@ -85,14 +126,14 @@ const Profile = () => {
           {!editing ? (
             <button
               onClick={() => setEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow"
+              className="px-4 py-2 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white rounded-lg shadow"
             >
               Edit Profile
             </button>
           ) : (
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg shadow"
+              className="px-4 py-2 cursor-pointer bg-green-600 hover:bg-green-800 text-white rounded-lg shadow"
             >
               Save Changes
             </button>
@@ -108,7 +149,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Name */}
+          {/* Full Name */}
           <div>
             <label className="font-semibold">Full Name:</label>
             {editing ? (
@@ -265,16 +306,47 @@ const Profile = () => {
           <div>
             <label className="font-semibold">Consultation Hours:</label>
             {editing ? (
-              <input
-                type="text"
-                name="consultationHours"
-                value={formData?.consultationHours || ""}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-                placeholder="e.g. 9 AM - 3 PM"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="consultationStart"
+                  value={formData?.consultationHours?.start || ""}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded"
+                  placeholder="Start e.g. 09:00 AM"
+                />
+                <input
+                  type="text"
+                  name="consultationEnd"
+                  value={formData?.consultationHours?.end || ""}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded"
+                  placeholder="End e.g. 05:00 PM"
+                />
+              </div>
             ) : (
-              <p className="text-gray-700">{userData?.consultationHours}</p>
+              <p className="text-gray-700">
+                {userData?.consultationHours?.start} - {userData?.consultationHours?.end}
+              </p>
+            )}
+          </div>
+
+          {/* Degree Certificate */}
+          <div className="md:col-span-2">
+            <label className="font-semibold">Medical Degree Certificate:</label>
+            {editing ? (
+              <input type="file" name="degreeCertificate" onChange={handleDegreeChange} />
+            ) : userData?.degreeCertificate ? (
+              <a
+                href={userData.degreeCertificate}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                View Certificate
+              </a>
+            ) : (
+              <p className="text-gray-700">Not Uploaded</p>
             )}
           </div>
         </div>

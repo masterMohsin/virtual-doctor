@@ -9,7 +9,7 @@ const Login = () => {
 
   // If already logged in → redirect to dashboard
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     const savedRole = localStorage.getItem("userRole");
     if (token && savedRole) {
       navigate(`/${savedRole}/dashboard`);
@@ -66,6 +66,9 @@ const Login = () => {
   }
 };
 
+useEffect(() => {
+  handleSubmit()
+},[])
 
   return (
     <div className="flex flex-col md:flex-row w-full h-screen overflow-hidden bg-[#0f0f0f] text-white">

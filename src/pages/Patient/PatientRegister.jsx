@@ -105,7 +105,7 @@ const PatientRegister = () => {
 
       if (res.data.success) {
         navigate("/patient/login");
-        localStorage.setItem("authToken", res.data.token);
+        localStorage.setItem("token", res.data.token);
         localStorage.setItem("userRole", "patient");
         localStorage.setItem("patientId", res.data.patientId);
         setMessage("Registration successful!");

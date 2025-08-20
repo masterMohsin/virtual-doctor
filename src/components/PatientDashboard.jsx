@@ -24,6 +24,9 @@ const PatientDashboard = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
+  const [doctorsData,setDoctorsData] = useState([])
+
+  const url = import.meta.env.VITE_API_URL;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -32,10 +35,25 @@ const PatientDashboard = () => {
   }
   }
 
-  useEffect(() => {
-    const user = async () => {
+  const getAllDoctors = async () => {
+    try {
+      const res = await axios.get(`${url}/api/users/get-doctors`,{
+        withCredentials : true
+      })
+      console.log(res);
+      
+      if(res.data.success) {
+        setDoctorsData(res.data.doctors)
+      }
+      
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+  }
+
+  const user = async () => {
       try {
-        const url = import.meta.env.VITE_API_URL;
         const res = await axios.get(`${url}/api/users/get-patient`,{
           withCredentials : true
         })
@@ -49,6 +67,9 @@ const PatientDashboard = () => {
         
       }
     }
+
+  useEffect(() => {
+    getAllDoctors()
     user();
   },[])
   return (
@@ -130,8 +151,8 @@ const PatientDashboard = () => {
               
             </div>
              <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw0Frc8TviQ1176lrkmb-uyJFpHZfXLYlQlw&s"
-              alt="Mohsin Muneer"
+              src={userData?.profileImage}
+              alt={userData?.fullName}
               className="w-24 h-24 rounded-full md:absolute -top-10 border-4 border-white shadow-md"
             />
 
@@ -176,21 +197,18 @@ const PatientDashboard = () => {
       </div>
 
       <div className="flex flex-wrap">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="w-1/2 lg:w-1/6 p-2"
-          >
+        {doctorsData.slice(0, 6).map((doctor, i) => (
+          <div key={doctor._id || i} className="w-1/2 lg:w-1/6 p-2">
             <div className="bg-white p-4 rounded-xl shadow text-center hover:scale-105 transition-transform duration-200">
               <img
-                src={`https://i.pravatar.cc/100?img=${(i % 70) + 1}`}
-                alt="Doctor"
+                src={doctor.profileImage || "/imgs/park.jpeg"}
+                alt={doctor.fullName}
                 className="w-20 h-20 rounded-full mx-auto mb-2"
               />
               <p className="font-semibold text-sm">
-                Dr. {i % 2 === 0 ? "Fillerup Grab" : "Blessing"}
+                {doctor.fullName}
               </p>
-              <p className="text-xs text-gray-500">Medical Specialist</p>
+              <p className="text-xs text-gray-500">{doctor.specialization}</p>
               <p className="text-yellow-400 text-sm">★★★★★</p>
             </div>
           </div>

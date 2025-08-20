@@ -38,7 +38,7 @@ const PopularDoctorProfile = () => {
         {/* Doctor Image */}
         <div className="absolute left-1/2 transform -translate-x-1/2 top-16">
           <img
-            src={doctor.image || "/imgs/default-doctor.jpg"}
+            src={doctor.profileImage || "/imgs/default-doctor.jpg"}
             alt={doctor.name}
             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
           />
@@ -48,9 +48,9 @@ const PopularDoctorProfile = () => {
       {/* Doctor Info */}
       <div className="mt-10 text-center px-4">
         <h2 className="text-2xl font-semibold">{doctor.name}</h2>
-        <p className="text-gray-600">{doctor.specialty}</p>
-        <p className="text-gray-600">{doctor.qualification || "MBBS, FCPS"}</p>
-        <p className="text-gray-600">Experience: {doctor.experience || "10+ Years"}</p>
+        <p className="text-gray-600">{doctor.specialization}</p>
+        <p className="text-gray-600">{doctor?.qualification || "MBBS, FCPS"}</p>
+        <p className="text-gray-600">Experience: {doctor.yearsOfExperience || "10+"} Years</p>
         <div className="mt-2 text-yellow-500 text-lg font-medium">
           ⭐ {doctor.rating || "4.8"} ({doctor.views || 0} reviews)
         </div>
@@ -60,9 +60,9 @@ const PopularDoctorProfile = () => {
       <div className="mt-8 px-6">
         <h3 className="text-[#0EBE7F] text-xl font-semibold mb-3">Availability</h3>
         <ul className="space-y-2 text-gray-700">
-          <li><strong>Hospital:</strong> {doctor.hospital || "Heart Care Clinic, Lahore"}</li>
+          <li><strong>Hospital:</strong> {doctor.affiliation || "Heart Care Clinic, Lahore"}</li>
           <li><strong>Days:</strong> {doctor.days || "Mon - Sat"}</li>
-          <li><strong>Time:</strong> {doctor.time || "9:00 AM – 2:00 PM"}</li>
+          <li><strong>Time:</strong> {doctor.consultationHours.start} - {doctor.consultationHours.end}</li>
           <li><strong>Mode:</strong> {doctor.mode || "In-person & Video Consultation"}</li>
           <li><strong>Fee:</strong> {doctor.fee || "Rs. 1500"}</li>
         </ul>
