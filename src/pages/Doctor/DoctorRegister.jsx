@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../api/api.js";
 
 const DoctorRegister = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -22,6 +22,7 @@ const DoctorRegister = () => {
     affiliation: "",
     consultantHours: "",
   });
+
   useEffect(() => {
     const messages = [
       "Contact with doctors Globally..",
@@ -75,6 +76,67 @@ const DoctorRegister = () => {
     if (name === "degreeCertificate") setDegreeCertificate(files[0]);
   };
 
+  // Function to parse consultant hours string and convert to proper format
+  const parseConsultantHours = (hoursString) => {
+    if (!hoursString) return [];
+    
+    // Try to parse common formats like "10am-04pm", "9:00 AM - 5:00 PM", etc.
+    const timeMatch = hoursString.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[-–]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+    
+    if (timeMatch) {
+      const startTime = timeMatch[1].trim();
+      const endTime = timeMatch[2].trim();
+      
+      // Convert to 24-hour format
+      const convertTo24Hour = (timeStr) => {
+        const cleanTime = timeStr.replace(/\s*(am|pm)/i, '');
+        const isPM = /pm/i.test(timeStr);
+        const [hours, minutes] = cleanTime.split(':').map(Number);
+        
+        let hour24 = hours;
+        if (isPM && hours !== 12) hour24 += 12;
+        if (!isPM && hours === 12) hour24 = 0;
+        
+        return `${hour24.toString().padStart(2, '0')}:${(minutes || 0).toString().padStart(2, '0')}`;
+      };
+      
+      const start24 = convertTo24Hour(startTime);
+      const end24 = convertTo24Hour(endTime);
+      
+      // Create consultant hours for weekdays (Mon-Fri) - match backend schema exactly
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      return weekdays.map(day => ({
+        day,
+        start: start24,
+        end: end24,
+        slotMinutes: 30,
+        isClosed: false
+      }));
+    }
+    
+    // If parsing fails, return default hours for weekdays
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return weekdays.map(day => ({
+      day,
+      start: "09:00",
+      end: "17:00",
+      slotMinutes: 30,
+      isClosed: false
+    }));
+  };
+
+  // Alternative function to create consultant hours from individual inputs
+  const createConsultantHours = () => {
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return weekdays.map(day => ({
+      day,
+      start: "09:00",
+      end: "17:00", 
+      slotMinutes: 30,
+      isClosed: false
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -90,42 +152,78 @@ const DoctorRegister = () => {
       setSuccess("");
       return;
     }
-    setLoading(true);
-    const formData = new FormData();
-    Object.entries({ ...register, role: "doctor" }).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) formData.append(key, value);
-    });
-    if (profileImage) formData.append("profileImage", profileImage);
-    if (degreeCertificate) formData.append("degreeCertificate", degreeCertificate);
-    try {
-      const BASE_URL = import.meta.env.VITE_API_URL;
-      if (!BASE_URL) throw new Error("API URL not configured");
-      const response = await axios.post(`${BASE_URL}/api/auth/register-doctor`, formData, { 
-        headers : { "Content-Type": "multipart/form-data" },
-        withCredentials: true
-      });
-      const data = response.data;
-      if (data.success) {
-        // localStorage.setItem("user", JSON.stringify(data));
-        setSuccess("Registration successful!");
 
-        setTimeout(() => navigate("/doctor/login"), 1000);
-      } else {
-        setError(data.message || "Registration failed");
+    // Validate consultation hours format
+    if (register.consultantHours) {
+      const timeFormat = /(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*[-–]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i;
+      if (!timeFormat.test(register.consultantHours)) {
+        setError("Please enter consultation hours in the correct format (e.g., 9:00 AM - 5:00 PM)");
         setSuccess("");
+        return;
+      }
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Prepare the registration data - match backend User model fields exactly
+      const registrationData = {
+        fullName: register.fullName,
+        email: register.email,
+        password: register.password,
+        confirmPassword: register.confirmPassword,
+        dateOfBirth: register.dateOfBirth,
+        gender: register.gender,
+        phoneNumber: register.phoneNumber,
+        address: register.address,
+        licenseNumber: register.licenseNumber,
+        bloodGroup: register.bloodGroup,
+        specialization: register.specialization,
+        qualification: register.qualification,
+        yearsOfExperience: parseInt(register.yearsOfExperience) || 0,
+        affiliation: register.affiliation,
+        consultantHours: parseConsultantHours(register.consultantHours)
+      };
+
+      // Use FormData for file uploads
+      const formData = new FormData();
+      
+      // Add all the data to FormData
+      Object.entries(registrationData).forEach(([key, value]) => {
+        if (key === 'consultantHours') {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined && value !== '') {
+          formData.append(key, value);
+        }
+      });
+      
+      if (profileImage) formData.append("profileImage", profileImage);
+      if (degreeCertificate) formData.append("degreeCertificate", degreeCertificate);
+      
+      const response = await API.post('/auth/register-doctor', formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      
+      if (response.data.success) {
+        setSuccess("Registration successful! Redirecting to login...");
+        setTimeout(() => navigate("/doctor/login"), 2000);
+      } else {
+        setError(response.data.message || "Registration failed");
       }
     } catch (err) {
-      // Show user-friendly error for 500 Internal Server Error
-      if (err.response?.status === 500) {
+      console.error('Registration error:', err);
+      if (err.response?.status === 409) {
+        setError("A doctor with this email already exists");
+      } else if (err.response?.status === 500) {
         setError("Something went wrong on the server. Please try again later or contact support.");
       } else {
         setError(
+          err.response?.data?.error ||
           err.response?.data?.message ||
           err.message ||
           "Registration failed"
         );
       }
-      setSuccess("");
     } finally {
       setLoading(false);
     }
@@ -196,34 +294,34 @@ const DoctorRegister = () => {
                 <label htmlFor="profileImage" className="flex items-center gap-2 cursor-pointer hover:text-green-300" aria-label="Upload profile image">
                   📷 Profile Image
                 </label>
-                <input type="file" id="profileImage" name="profileImage" className="hidden" onChange={handleFileChange} aria-label="Profile image upload" />
+                <input type="file" id="profileImage" name="profileImage" className="hidden" onChange={handleFileChange} accept="image/*" aria-label="Profile image upload" />
                 {profileImage && <span className="ml-2 text-xs text-green-300">{profileImage.name}</span>}
               </div>
               <div className="flex items-center justify-center gap-2 text-white text-sm col-span-1">
-                <label htmlFor="degreeImage" className="flex items-center gap-2 cursor-pointer hover:text-green-300" aria-label="Upload degree image">
-                  🎓 Degree Image
+                <label htmlFor="degreeCertificate" className="flex items-center gap-2 cursor-pointer hover:text-green-300" aria-label="Upload degree certificate">
+                  📜 Degree Certificate
                 </label>
-                <input type="file" id="degreeCertificate" name="degreeCertificate" />{degreeCertificate && <span>{degreeCertificate.name}</span>}
+                <input type="file" id="degreeCertificate" name="degreeCertificate" className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" aria-label="Degree certificate upload" />
+                {degreeCertificate && <span className="ml-2 text-xs text-green-300">{degreeCertificate.name}</span>}
               </div>
 
-              {/* Standard Fields */}
               <input
                 type="text"
                 placeholder="Full Name"
+                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
                 required
                 name="fullName"
                 value={register.fullName}
                 onChange={handleInput}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
               />
               <input
                 type="email"
                 placeholder="Email"
                 className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
+                required
                 name="email"
                 value={register.email}
                 onChange={handleInput}
-                required
               />
 
               <input
@@ -234,6 +332,7 @@ const DoctorRegister = () => {
                 name="password"
                 value={register.password}
                 onChange={handleInput}
+                minLength={6}
               />
               <input
                 type="password"
@@ -243,50 +342,29 @@ const DoctorRegister = () => {
                 name="confirmPassword"
                 value={register.confirmPassword}
                 onChange={handleInput}
+                minLength={6}
               />
 
               <input
                 type="date"
-                className="px-4 py-2 rounded-lg bg-white/10 text-white outline-none"
-                required
+                placeholder="Date of Birth"
+                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
                 name="dateOfBirth"
                 value={register.dateOfBirth}
                 onChange={handleInput}
               />
               <select
-                className="px-4 py-2 rounded-lg bg-white/10 text-white cursor-pointer outline-none"
                 name="gender"
                 value={register.gender}
                 onChange={handleInput}
-                required
+                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
               >
-                <option disabled value="">
-                  Gender
-                </option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
 
-              <select
-                className="px-4 py-2 rounded-lg bg-white/10 text-gray-100 cursor-pointer outline-none"
-                name="bloodGroup"
-                value={register.bloodGroup}
-                onChange={handleInput}
-                required
-              >
-                <option disabled value="">
-                  Blood Group
-                </option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
               <input
                 type="text"
                 placeholder="Phone Number"
@@ -296,7 +374,6 @@ const DoctorRegister = () => {
                 value={register.phoneNumber}
                 onChange={handleInput}
               />
-
               <input
                 type="text"
                 placeholder="License Number"
@@ -306,6 +383,7 @@ const DoctorRegister = () => {
                 value={register.licenseNumber}
                 onChange={handleInput}
               />
+
               <input
                 type="text"
                 placeholder="Specialization"
@@ -315,7 +393,6 @@ const DoctorRegister = () => {
                 value={register.specialization}
                 onChange={handleInput}
               />
-
               <input
                 type="text"
                 placeholder="Qualification"
@@ -323,8 +400,8 @@ const DoctorRegister = () => {
                 name="qualification"
                 value={register.qualification}
                 onChange={handleInput}
-                required
               />
+
               <input
                 type="number"
                 placeholder="Years of Experience"
@@ -332,7 +409,15 @@ const DoctorRegister = () => {
                 name="yearsOfExperience"
                 value={register.yearsOfExperience}
                 onChange={handleInput}
-                required
+                min="0"
+              />
+              <input
+                type="text"
+                placeholder="Blood Group"
+                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
+                name="bloodGroup"
+                value={register.bloodGroup}
+                onChange={handleInput}
               />
 
               <input
@@ -344,17 +429,6 @@ const DoctorRegister = () => {
                 value={register.affiliation}
                 onChange={handleInput}
               />
-
-              {/* Consultant Hours & Address - same row */}
-              <input
-                type="text"
-                placeholder="Consultant Hours (e.g., 5pm - 9pm)"
-                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
-                required
-                name="consultantHours"
-                value={register.consultantHours}
-                onChange={handleInput}
-              />
               <input
                 type="text"
                 placeholder="Address"
@@ -362,8 +436,20 @@ const DoctorRegister = () => {
                 name="address"
                 value={register.address}
                 onChange={handleInput}
-                required
               />
+
+              <input
+                type="text"
+                placeholder="Consultant Hours (e.g., 9:00 AM - 5:00 PM)"
+                className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none col-span-2"
+                required
+                name="consultantHours"
+                value={register.consultantHours}
+                onChange={handleInput}
+              />
+              <div className="col-span-2 text-xs text-white/60 text-center">
+                Format: Start Time - End Time (e.g., 9:00 AM - 5:00 PM, 10am-6pm)
+              </div>
 
               <label className="col-span-2 flex items-center gap-2 text-white text-sm">
                 <input
@@ -378,7 +464,7 @@ const DoctorRegister = () => {
 
               <button
                 type="submit"
-                className="col-span-2 bg-emerald-500 hover:bg-emerald-400 cursor-pointer transition-colors text-white py-3 rounded-lg font-medium text-xl"
+                className="col-span-2 bg-emerald-500 hover:bg-emerald-400 cursor-pointer transition-colors text-white py-3 rounded-lg font-medium text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? "Registering..." : "Register"}

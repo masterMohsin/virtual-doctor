@@ -71,10 +71,11 @@ const DoctorLogin = () => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", res.data.role || "doctor");
 
+        navigate("/doctor/dashboard");
         // update context if needed
         if (userLogin) userLogin(res.data.token, "doctor");
 
-        navigate("/doctor/dashboard");
+        
       } else {
         setError("Invalid email or password");
       }

@@ -1,81 +1,90 @@
+// src/pages/patient/SelectTime.jsx
 import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import SuccessModal from "../../components/SuccessModal";
-
-const LOCAL_STORAGE_KEY = "findDoctorsList";
+import API from "../../api/api.js";
+import { useAuth } from "../../context/AuthContext";
 
 const SelectTime = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [showSuccess, setShowSuccess] = useState(false);
+  const { user } = useAuth(); // ✅ Logged-in user from context
+  const patient = JSON.parse(localStorage.getItem("user"));
+  console.log("Logged-in patient:", patient);
+  
+  const token = user?.token || localStorage.getItem("token");
 
-  const doctors = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
-  const doctor = doctors.find((doc) => String(doc.id) === String(id));
+  const [doctors, setDoctors] = useState(
+    JSON.parse(localStorage.getItem("popularDoctors") || "[]")
+  );
+  const doctor = doctors.find(
+    (doc) => String(doc._id || doc.id) === String(id)
+  );
+  console.log("Selected doctor:", doctor);
+  
 
-  if (!doctor) {
-    return <div className="p-6 text-center text-red-500">Doctor not found.</div>;
-  }
-
-  const [selectedSlot, setSelectedSlot] = useState("2:00 PM");
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [customDate, setCustomDate] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [toast, setToast] = useState("");
   const [dates, setDates] = useState([]);
-  const [bookedSlots, setBookedSlots] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [reason, setReason] = useState("");
+  const [locationType, setLocationType] = useState("video");
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const slots = {
-    afternoon: ["1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM"],
-    evening: ["5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM"],
-  };
-
-  const allSlots = [...slots.afternoon, ...slots.evening];
-  const existingAppointments = JSON.parse(localStorage.getItem("appointments")) || [];
-
-  const getAvailableSlotsCount = (dateStr) => {
-    const booked = existingAppointments.filter((appt) => appt.date === dateStr && appt.doctor === doctor.name);
-    return allSlots.length - booked.length;
-  };
-
-  const getUpcomingWeekdays = (count = 3) => {
-  const days = [];
-  let date = new Date();
-
-  while (days.length < count) {
-    const day = date.getDay();
-    const dateStr = date.toDateString();
-
-    if (day !== 0 && day !== 6) {
-      const isToday = new Date().toDateString() === dateStr;
-
-      days.push({
-        id: date.getTime(),
-        item: dateStr,
-        slot: isToday ? "No slots available" : 
-              getAvailableSlotsCount(dateStr) > 0
-              ? `${getAvailableSlotsCount(dateStr)} slots available`
-              : "No slots available",
-      });
-    }
-
-    date.setDate(date.getDate() + 1);
+  if (!doctor) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Doctor not found.
+      </div>
+    );
   }
 
-  return days;
-};
-
+  const getUpcomingWeekdays = (count = 7) => {
+    const days = [];
+    let date = new Date();
+    while (days.length < count) {
+      const day = date.getDay();
+      const dateStr = date.toISOString().split("T")[0];
+      if (day !== 0 && day !== 6) {
+        const isToday = new Date().toISOString().split("T")[0] === dateStr;
+        days.push({
+          id: date.getTime(),
+          item: dateStr,
+          display: date.toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }),
+          isToday,
+        });
+      }
+      date.setDate(date.getDate() + 1);
+    }
+    return days;
+  };
 
   useEffect(() => {
     setDates(getUpcomingWeekdays());
   }, []);
 
-  useEffect(() => {
-    if (selectedDate?.item) {
-      const booked = existingAppointments
-        .filter((appt) => appt.doctor === doctor.name && appt.date === selectedDate.item)
-        .map((appt) => appt.slot);
-      setBookedSlots(booked);
+  const fetchAvailableSlots = async (date) => {
+    try {
+      const response = await API.get(
+        `/appointments/doctor/${doctor._id || doctor.id}/slots?date=${date}`
+      );
+      setAvailableSlots(response.data.slots || []);
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+      setAvailableSlots([]);
     }
+  };
+
+  useEffect(() => {
+    if (selectedDate) fetchAvailableSlots(selectedDate);
   }, [selectedDate]);
 
   const today = new Date().toISOString().split("T")[0];
@@ -83,53 +92,94 @@ const SelectTime = () => {
   const handleCustomDate = (e) => {
     const value = e.target.value;
     if (!value) return;
-
     const selected = new Date(value);
     const day = selected.getDay();
-
     if (day === 0 || day === 6) {
       setToast("❌ Weekends are not allowed.");
       return;
     }
-
-    const formatted = selected.toDateString();
-    const availableCount = getAvailableSlotsCount(formatted);
-
     const newCustom = {
       id: 99,
-      item: formatted,
-      slot: availableCount > 0 ? `${availableCount} slots available` : "No slots available",
+      item: value,
+      display: selected.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
+      isToday: false,
     };
-
     setCustomDate(newCustom);
-    setSelectedDate(newCustom);
+    setSelectedDate(value);
     setToast("");
   };
 
-  const handleBookNow = () => {
-    if (!selectedDate || selectedDate.slot === "No slots available") {
-      setToast("❌ Please select a valid date.");
+  const formatTime = (dateTime) => {
+    const date = new Date(dateTime);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const handleBookNow = async () => {
+    if (!user && !patient) {
+      alert("Please login first.");
       return;
     }
 
-    const appointment = {
-      id: Date.now(),
-      image: doctor.image,
-      doctor: doctor.name,
-      date: selectedDate.item,
-      slot: selectedSlot,
+    if (!selectedSlot) {
+      alert("Please select a time slot.");
+      return;
+    }
+
+    const selectedStart = selectedSlot.startTime;
+    const selectedEnd = selectedSlot.endTime;
+
+    const doctorId = doctor._id || doctor.id;
+    const patientId = user?._id || patient?.id;
+
+    if (!doctorId || !patientId) {
+      console.error("Missing doctor or patient ID", { doctorId, patientId });
+      alert("Something went wrong: missing doctor/patient info.");
+      return;
+    }
+
+    const appointmentData = {
+      doctor: doctorId,
+      patient: patientId,
+      startTime: selectedStart,
+      endTime: selectedEnd,
+      reason: reason || "",
+      locationType,
     };
 
-    const updatedAppointments = [appointment, ...existingAppointments];
-    localStorage.setItem("appointments", JSON.stringify(updatedAppointments));
+    try {
+      setLoading(true);
+      const response = await API.post("/appointments/book", appointmentData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log(response.data);
+      
 
-    setToast("");
-    setShowSuccess(true);
+      setLoading(false);
+      setShowSuccess(true);
+      console.log("Booked appointment:", response.data);
+      
+    } catch (error) {
+      setLoading(false);
+      console.error("Error booking appointment:", error);
+      alert(
+        error.response?.data?.message ||
+          "Failed to book appointment. Please try again."
+      );
+    }
   };
 
-  const handleVerify = (doctorName) => {
-    const formattedName = doctorName.replace(/\./g, "").replace(/\s+/g, "-");
-    navigate(`/patient/doctor-profile/${formattedName}`);
+  const handleVerify = (id) => {
+    navigate(`/patient/doctor-profile/${id}`);
   };
 
   return (
@@ -138,22 +188,28 @@ const SelectTime = () => {
       <div className="w-full md:w-[700px] min-h-[180px] p-5 mx-auto rounded-md shadow-lg mt-10">
         <div className="flex flex-col md:flex-row items-center gap-2">
           <img
-            src={doctor.image || "/imgs/azeem.jpg"}
-            alt={doctor.name}
+            src={doctor.profileImage || "/imgs/azeem.jpg"}
+            alt={doctor.fullName || doctor.name}
             className="w-28 h-28 rounded-xl object-cover"
           />
           <div>
-            <h2 className="text-[#333333] text-3xl font-semibold mb-1">{doctor.name}</h2>
-            <p className="text-[#677294] mb-2">{doctor.specialty}</p>
+            <h2 className="text-[#333333] text-3xl font-semibold mb-1">
+              {doctor.fullName}
+            </h2>
+            <p className="text-[#677294] mb-2">{doctor.specialization}</p>
             <div className="flex items-center text-xl text-yellow-500">
-              {Array(4).fill().map((_, i) => <FaStar key={i} />)}
+              {Array(4)
+                .fill()
+                .map((_, i) => (
+                  <FaStar key={i} />
+                ))}
               <FaStar className="text-gray-300" />
             </div>
           </div>
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => handleVerify(doctor.name)}
+            onClick={() => handleVerify(doctor._id || doctor.id)}
             className="bg-[#0EBE7F] text-white px-4 py-2 font-semibold rounded-md cursor-pointer"
           >
             View Profile
@@ -161,38 +217,25 @@ const SelectTime = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex justify-center gap-5 bg-[#0EBE7F] rounded-md max-w-sm mx-auto p-3 mt-10 text-center">
-        {["300+ Patients", "15+ Year Exp", "200+ Reviews"].map((item, idx) => (
-          <div key={idx} className="bg-white px-3 py-2 rounded-xl shadow text-xl text-[#0EBE7F] font-semibold">
-            {item}
-          </div>
-        ))}
-      </div>
-
-      {/* Date Selection */}
+      {/* Dates */}
       <div className="flex justify-center gap-3 flex-wrap text-sm text-center mt-10">
         {[...dates, ...(customDate ? [customDate] : [])].map((currItem) => (
           <div
             key={currItem.id}
-            onClick={() => {
-              if (currItem.slot !== "No slots available") {
-                setSelectedDate(currItem);
-              }
-            }}
+            onClick={() => setSelectedDate(currItem.item)}
             className={`px-4 py-2 border border-gray-100 rounded-md cursor-pointer ${
-              selectedDate?.id === currItem.id ? "bg-[#0EBE7F] text-white" : "bg-white"
-            } ${
-              currItem.slot === "No slots available" ? "opacity-50 cursor-not-allowed" : ""
+              selectedDate === currItem.item
+                ? "bg-[#0EBE7F] text-white"
+                : "bg-white"
             }`}
           >
-            <h2 className="text-xl font-semibold">{currItem.item}</h2>
-            <p>{currItem.slot}</p>
+            <h2 className="text-xl font-semibold">{currItem.display}</h2>
+            {currItem.isToday && <p className="text-xs">Today</p>}
           </div>
         ))}
       </div>
 
-      {/* Custom Date Input */}
+      {/* Custom Date */}
       <div className="flex flex-col items-center mt-5">
         <label className="text-gray-600 mb-1">Or choose a custom date:</label>
         <input
@@ -203,72 +246,87 @@ const SelectTime = () => {
         />
       </div>
 
+      {/* Reason & Type */}
+      {selectedDate && (
+        <div className="mt-8 max-w-md mx-auto">
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Reason for Visit
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Describe your symptoms or reason for the appointment..."
+              rows="3"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Appointment Type
+            </label>
+            <select
+              value={locationType}
+              onChange={(e) => setLocationType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="video">Video Consultation</option>
+              <option value="in_person">In-Person Visit</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Slots */}
-      <div className="mt-10 flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20">
-        {/* Afternoon */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">
-            Afternoon ({slots.afternoon.length} slots)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-xl">
-            {slots.afternoon.map((slot, idx) => {
-              const isBooked = bookedSlots.includes(slot);
-              return (
-                <button
-                  key={idx}
-                  disabled={isBooked}
-                  className={`px-3 py-2 rounded-md font-semibold transition-all duration-200 ${
-                    isBooked
-                      ? "bg-red-400 text-white cursor-not-allowed"
-                      : selectedSlot === slot
-                      ? "bg-[#0EBE7F] text-white"
-                      : "bg-green-100 text-[#0EBE7F] hover:bg-[#0EBE7F] hover:text-white"
-                  }`}
-                  onClick={() => !isBooked && setSelectedSlot(slot)}
-                >
-                  {slot}
-                </button>
-              );
+      {selectedDate && availableSlots.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold text-gray-600 mb-4 text-center">
+            Available Time Slots for{" "}
+            {new Date(selectedDate).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
+            {availableSlots.map((slot, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedSlot(slot)}
+                className={`px-4 py-3 rounded-md font-semibold transition-all duration-200 ${
+                  selectedSlot?.startTime === slot.startTime
+                    ? "bg-[#0EBE7F] text-white"
+                    : "bg-green-100 text-[#0EBE7F] hover:bg-[#0EBE7F] hover:text-white"
+                }`}
+              >
+                {formatTime(slot.startTime)}
+              </button>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Evening */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">
-            Evening ({slots.evening.length} slots)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-xl font-semibold">
-            {slots.evening.map((slot, idx) => {
-              const isBooked = bookedSlots.includes(slot);
-              return (
-                <button
-                  key={idx}
-                  disabled={isBooked}
-                  className={`px-3 py-2 rounded-md transition-all duration-200 ${
-                    isBooked
-                      ? "bg-red-400 text-white cursor-not-allowed"
-                      : selectedSlot === slot
-                      ? "bg-[#0EBE7F] text-white"
-                      : "bg-green-100 text-[#0EBE7F] hover:bg-[#0EBE7F] hover:text-white"
-                  }`}
-                  onClick={() => !isBooked && setSelectedSlot(slot)}
-                >
-                  {slot}
-                </button>
-              );
-            })}
-          </div>
+      {selectedDate && availableSlots.length === 0 && (
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-lg">
+            No available slots for the selected date.
+          </p>
         </div>
-      </div>
+      )}
 
-      {/* Book Button */}
+      {/* Book */}
       <div className="text-center mt-10 flex justify-center items-center">
         <button
           onClick={handleBookNow}
-          className="bg-[#0EBE7F] text-white px-6 py-3 text-xl font-semibold rounded-full hover:bg-[#83ecac] transition"
+          disabled={loading || !selectedDate || !selectedSlot || !reason.trim()}
+          className={`px-6 py-3 text-xl font-semibold rounded-full transition ${
+            loading || !selectedDate || !selectedSlot || !reason.trim()
+              ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+              : "bg-[#0EBE7F] text-white hover:bg-[#83ecac]"
+          }`}
         >
-          Book now
+          {loading ? "Booking..." : "Book Appointment"}
         </button>
       </div>
 
@@ -276,8 +334,8 @@ const SelectTime = () => {
       {showSuccess && (
         <SuccessModal
           doctor={doctor}
-          date={selectedDate?.item}
-          slot={selectedSlot}
+          date={selectedDate}
+          slot={selectedSlot ? formatTime(selectedSlot.startTime) : ""}
           onClose={() => setShowSuccess(false)}
           onDone={() => {
             setShowSuccess(false);

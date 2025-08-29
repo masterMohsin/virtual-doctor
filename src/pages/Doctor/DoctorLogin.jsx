@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
+import API from "../../api/api.js";
 
 const DoctorLogin = () => {
   const [error, setError] = useState("");
@@ -59,18 +59,21 @@ const DoctorLogin = () => {
     e.preventDefault();
     setError("");
     try {
-      const BASE_URL = import.meta.env.VITE_API_URL;
       const { email, password } = login;
 
-      const res = await axios.post(
-        `${BASE_URL}/api/auth/login-doctor`,
-        { email, password },
-        { withCredentials: true }
-      );
-
+      const res = await API.post('/auth/login-doctor', { email, password });
+      console.log(res.data.user._id);
+      
       if (res?.data?.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", res.data.role || "doctor");
+        localStorage.setItem("user", JSON.stringify({
+          id: res.data.user._id,
+          fullName: res.data.user.fullName,
+          email: res.data.user.email,
+          role: res.data.role,
+          token: res.data.token
+        }));
 
         if (userLogin) userLogin(res.data.token, "doctor");
 
@@ -79,8 +82,8 @@ const DoctorLogin = () => {
         setError("Invalid email or password");
       }
     } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
+      console.error('Login error:', err);
+      setError(err.response?.data?.error || "Something went wrong. Please try again.");
     }
   };
 

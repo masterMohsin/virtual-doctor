@@ -11,7 +11,8 @@ import SelectTime from "../pages/Patient/SelectTime";
 import DoctorProfile from "../pages/Patient/DoctorProfile";
 import PopularDoctors from "../pages/Patient/PopularDoctors";
 import PopularDoctorProfile from "../pages/Patient/PopularDoctorProfile";
-import Appointements from "../pages/Patient/Appointements";
+// import Appointements from "../pages/Patient/Appointements";
+import PatientAppointments from "../pages/Patient/PatientAppointment";
 import Profile from "../pages/Patient/Profile";
 import PatientRegister from "../pages/Patient/PatientRegister";
 import ForgotPassword from "../pages/Patient/ForgotPassword";
@@ -23,6 +24,12 @@ import DoctorLogin from "../pages/Doctor/DoctorLogin";
 import DoctorDashboard from "../pages/Doctor/DoctorDashboard";
 import Appointments from "../pages/Doctor/Appointments";
 import DoctorsProfile from "../pages/Doctor/Profile";
+
+// ProtectedRoute
+import ProtectedRoute from "../components/ProtectedRoute";
+import DoctorAppointments from "../pages/Doctor/DoctorAppointments";
+import MeetPage from "../components/MeetPage";
+
 
 const Vitrual = () => {
   const router = createBrowserRouter([
@@ -36,6 +43,7 @@ const Vitrual = () => {
         { path: "patient/register", element: <PatientRegister /> },
         { path: "forgot-password", element: <ForgotPassword /> },
         { path: "otp", element: <OTPVerification /> },
+        { path:"/meet/:roomId",  element:<MeetPage />}, 
       ],
     },
     {
@@ -45,23 +53,115 @@ const Vitrual = () => {
         {
           path: "doctor",
           children: [
-            { path: "dashboard", element: <DoctorDashboard /> },
-            { path: "appointments", element: <Appointments /> },
-            { path: "profile", element: <DoctorsProfile /> },
+            {
+              path: "dashboard",
+              element: (
+                <ProtectedRoute role="doctor">
+                  <DoctorDashboard />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "appointments",
+              element: (
+                <ProtectedRoute role="doctor">
+                  <DoctorAppointments />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "profile",
+              element: (
+                <ProtectedRoute role="doctor">
+                  <DoctorsProfile />
+                </ProtectedRoute>
+              ),
+            },
           ],
         },
         {
           path: "patient",
           children: [
-            { path: "dashboard", element: <PatientDashboard /> },
-            { path: "find-doctors", element: <FindDoctors /> },
-            { path: "find-doctors/:id/select-time", element: <SelectTime /> },
-            { path: "doctor-profile/:id", element: <DoctorProfile /> },
-            { path: "popular-doctors", element: <PopularDoctors /> },
-            { path: "popular-doctors/:id", element: <PopularDoctorProfile /> },
-            { path: "popular-doctors/:id/select-time", element: <SelectTime /> },
-            { path: "appointments", element: <Appointements /> },
-            { path: "profile", element: <Profile /> },
+            {
+              path: "dashboard",
+              element: (
+                <ProtectedRoute role="patient">
+                  <PatientDashboard />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "find-doctors",
+              element: (
+                <ProtectedRoute role="patient">
+                  <FindDoctors />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "find-doctors/:id/select-time",
+              element: (
+                <ProtectedRoute role="patient">
+                  <SelectTime />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "doctor-profile/:id",
+              element: (
+                <ProtectedRoute role="patient">
+                  <DoctorProfile />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "select-time/:id",
+              element: (
+                <ProtectedRoute role="patient">
+                  <SelectTime />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "popular-doctors",
+              element: (
+                <ProtectedRoute role="patient">
+                  <PopularDoctors />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "popular-doctors/:id",
+              element: (
+                <ProtectedRoute role="patient">
+                  <PopularDoctorProfile />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "popular-doctors/:id/select-time",
+              element: (
+                <ProtectedRoute role="patient">
+                  <SelectTime />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "appointments",
+              element: (
+                <ProtectedRoute role="patient">
+                  <PatientAppointments />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "profile",
+              element: (
+                <ProtectedRoute role="patient">
+                  <Profile />
+                </ProtectedRoute>
+              ),
+            },
           ],
         },
       ],

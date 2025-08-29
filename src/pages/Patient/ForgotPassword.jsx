@@ -1,6 +1,10 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
+  const navigate = useNavigate()
   const messages = [
     'We’ll help you get back in..',
     'Enter your email to recover access..',
@@ -36,6 +40,21 @@ const ForgotPassword = () => {
     return () => clearTimeout(timeout);
   }, [charIndex, isDeleting, messageIndex]);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const BASE_URL = import.meta.env.VITE_API_URL;
+      const res = await axios.post(`${BASE_URL}/api/auth/send-reset-otp`, { email });
+      console.log(res.data);
+      if(res.data.success) {
+        navigate(`/otp?email=${email}`);
+      }
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+    // Handle form submission logic here
+  };
   return (
     <div className="bg-[#0f0f0f] flex items-center justify-center min-h-screen p-0 m-0">
       <div className="flex flex-col md:flex-row w-full h-screen font-sans">
@@ -77,12 +96,16 @@ const ForgotPassword = () => {
               <p className="text-sm text-white/60 mt-1">Enter your registered email to receive reset instructions.</p>
             </div>
 
-            <form className="relative z-10 flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
                 required
                 className="px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 outline-none"
+                name='email'
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
+                
               />
 
               <button

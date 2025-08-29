@@ -1,164 +1,188 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import API from "../../api/api.js";
 import { FaCalendarAlt, FaClock } from "react-icons/fa";
 
 const DoctorDashboard = () => {
-  const [userData,setUserData] = useState(null)
+  const [userData, setUserData] = useState(null);
+  const [dashboardCounts, setDashboardCounts] = useState({
+    today: 0,
+    pending: 0,
+    upcoming: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const user = async () => {
+  // Fetch dashboard counts
+  const fetchAppointments = async () => {
     try {
-      const url = import.meta.env.VITE_API_URL;
-      const res = await axios.get(`${url}/api/users/get-doctor`, {
-        withCredentials: true,
-      });
-      console.log(res.data.doctor);
+      setLoading(true);
+      const response = await API.get('/appointments/dashboard');
+      console.log(response);
       
+      const data = response.data;
+
+      setDashboardCounts({
+        today: data.today || 0,
+        pending: data.pending || 0,
+        upcoming: data.upcoming || 0,
+      });
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch doctor data
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get('/users/get-doctor');
+
       if (res.data.success) {
         setUserData(res.data.doctor);
       }
     } catch (error) {
-      console.log(error.message);
-      
+      console.log('Error fetching doctor data:', error.response?.data || error.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    user()
-  },[])
+    fetchUserData();
+    fetchAppointments();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-4 flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 flex flex-col space-y-6">
       {/* Top Bar */}
       <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow">
         <div className="text-xl md:text-2xl font-semibold">
-          Welcome back, <span className="text-blue-600">{userData?.name}</span>
+          Welcome back,{" "}
+          <span className="text-blue-600">
+            {userData?.name || "Doctor"}
+          </span>
         </div>
         <img
-          src={userData?.profileImage || "/imgs/default-profile.png"}
+          src={
+            userData?.profileImage ||
+            "https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=faces&fit=crop&w=200&h=200"
+          }
           alt="Doctor"
           className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover"
         />
       </div>
 
-      {/* Appointment + Cards Row */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Big Appointment Card */}
-        <div className="rounded-2xl text-white w-full lg:w-[40%] py-4 px-4 bg-[#5852F2]">
-          <div>
-            <div className="bg-[#9793F3] bg-opacity-20 text-xl px-6 py-2 rounded-full w-fit mb-2">
-              Today
-            </div>
-            <h2 className="font-bold text-xl md:text-2xl mb-3">Next Appointment</h2>
-            <div className="flex items-center gap-2 mb-1">
-              <FaCalendarAlt />
-              <span>12 January 2025</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FaClock />
-              <span>01:30 PM</span>
-            </div>
+      {/* Big Appointment Card */}
+      <div className="rounded-2xl text-white w-full lg:w-[40%] py-4 px-4 bg-[#5852F2]">
+        <div>
+          <div className="bg-[#9793F3] bg-opacity-20 text-xl px-6 py-2 rounded-full w-fit mb-2">
+            Today
           </div>
-          <div className="flex items-center justify-between mt-6">
-            <div>
-              <p className="font-semibold text-xl md:text-2xl">Dr. Mohsin</p>
-              <p className="text-xl">General Practitioner</p>
-            </div>
+          <h2 className="font-bold text-xl md:text-2xl mb-3">
+            Next Appointment
+          </h2>
+          <div className="flex items-center gap-2 mb-1">
+            <FaCalendarAlt />
+            <span>12 January 2025</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FaClock />
+            <span>01:30 PM</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-6">
+          <div>
+            <p className="font-semibold text-xl md:text-2xl">
+              {userData?.name || "Dr. Smith"}
+            </p>
+            <p className="text-xl">
+              {userData?.specialization || "General Practitioner"}
+            </p>
+          </div>
+          <img
+            src={
+              userData?.profileImage ||
+              "https://images.unsplash.com/photo-1588776814546-4b2f8fbb3c24?crop=faces&fit=crop&w=200&h=200"
+            }
+            alt="Doctor"
+            className="w-20 h-20 rounded-full border-2 border-white object-cover"
+          />
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-4 w-full lg:flex-1">
+        {/* Card 1: Today Appointments */}
+        <div className="rounded-2xl px-4 py-2 text-white bg-[#F2B544] h-32 flex flex-col justify-between">
+          <div className="bg-[#F3CF8B] w-12 h-12 flex justify-center items-center rounded-full">
             <img
-              src="https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827774.jpg"
-              alt="Doctor"
-              className="w-20 h-20 rounded-full border-2 border-white object-cover"
+              className="w-6 h-6"
+              src="https://img.icons8.com/ios-filled/50/ffffff/stethoscope.png"
+              alt="Icon"
             />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg md:text-xl">
+              Today's Appointments
+            </h2>
+            <p className="text-sm">{dashboardCounts.today} scheduled</p>
           </div>
         </div>
 
-        {/* Summary Cards */}
-<div className="grid grid-cols-2 gap-4 w-full lg:flex-1">
-  {/* Card 1: Today Appointments */}
-  <div className="rounded-2xl px-4 py-2 text-white bg-[#F2B544] h-32 flex flex-col justify-between">
-    <div className="bg-[#F3CF8B] w-12 h-12 flex justify-center items-center rounded-full">
-      <img className="w-6 h-6" src="./imgs/Vector.png" alt="Icon" />
-    </div>
-    <div>
-      <h2 className="font-bold text-lg md:text-xl">Today’s Appointments</h2>
-      <p className="text-sm">7 scheduled</p>
-    </div>
-  </div>
+        {/* Card 2: Pending Appointments */}
+        <div className="rounded-2xl px-4 py-2 text-white bg-[#EC4899] h-32 flex flex-col justify-between">
+          <div className="bg-pink-300 w-12 h-12 flex justify-center items-center rounded-full">
+            <img
+              className="w-6 h-6"
+              src="https://img.icons8.com/ios-filled/50/ffffff/hourglass.png"
+              alt="Icon"
+            />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg md:text-xl">Pending</h2>
+            <p className="text-sm">{dashboardCounts.pending} pending</p>
+          </div>
+        </div>
 
-  {/* Card 2: Pending Appointments */}
-  <div className="rounded-2xl px-4 py-2 text-white bg-[#EC4899] h-32 flex flex-col justify-between">
-    <div className="bg-pink-300 w-12 h-12 flex justify-center items-center rounded-full">
-      <img className="w-6 h-6" src="./imgs/Vector.png" alt="Icon" />
-    </div>
-    <div>
-      <h2 className="font-bold text-lg md:text-xl">Pending</h2>
-      <p className="text-sm">3 carryover</p>
-    </div>
-  </div>
+        {/* Card 3: Chat Notifications */}
+        <div className="rounded-2xl px-4 py-2 text-white bg-[#3B82F6] h-32 flex flex-col justify-between">
+          <div className="bg-blue-300 w-12 h-12 flex justify-center items-center rounded-full">
+            <img
+              className="w-6 h-6"
+              src="https://img.icons8.com/ios-filled/50/ffffff/chat.png"
+              alt="Icon"
+            />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg">Upcoming</h2>
+            <p className="text-sm">{dashboardCounts.upcoming} upcoming</p>
+          </div>
+        </div>
 
-  {/* Card 3: Chat Notifications */}
-  <div className="rounded-2xl px-4 py-2 text-white bg-[#3B82F6] h-32 flex flex-col justify-between">
-    <div className="bg-blue-300 w-12 h-12 flex justify-center items-center rounded-full">
-      <img className="w-6 h-6" src="./imgs/Vector.png" alt="Icon" />
-    </div>
-    <div>
-      <h2 className="font-bold text-lg">Chat Notifications</h2>
-      <p className="text-sm">5 unread</p>
-    </div>
-  </div>
-
-  {/* Card 4: Completed Appointments */}
-  <div className="rounded-2xl px-4 py-2 text-white bg-[#10B981] h-32 flex flex-col justify-between">
-    <div className="bg-green-300 w-12 h-12 flex justify-center items-center rounded-full">
-      <img className="w-6 h-6" src="./imgs/Vector.png" alt="Icon" />
-    </div>
-    <div>
-      <h2 className="font-bold text-lg">Completed</h2>
-      <p className="text-sm">14 done</p>
-    </div>
-  </div>
-</div>
-
+        {/* Card 4: Completed Appointments */}
+        <div className="rounded-2xl px-4 py-2 text-white bg-[#10B981] h-32 flex flex-col justify-between">
+          <div className="bg-green-300 w-12 h-12 flex justify-center items-center rounded-full">
+            <img
+              className="w-6 h-6"
+              src="https://img.icons8.com/ios-filled/50/ffffff/checked.png"
+              alt="Icon"
+            />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg">Completed</h2>
+            <p className="text-sm">{dashboardCounts?.completed} done</p>
+          </div>
+        </div>
       </div>
-      
-
-      {/* Previous Appointments */}
-      <div className="bg-white p-6 rounded-2xl shadow-md w-full">
-  <h2 className="text-2xl font-bold text-gray-800 mb-6">Previous Completed Appointments</h2>
-  <ul className="space-y-4">
-    <li className="flex items-center gap-4 border-b pb-4">
-      <img
-        src="https://randomuser.me/api/portraits/men/32.jpg"
-        alt="Ali Khan"
-        className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500"
-      />
-      <div>
-        <p className="font-semibold text-lg text-gray-700">Ali Khan</p>
-        <p className="text-sm text-gray-500">Date: 28 July 2025</p>
-        <span className="inline-block mt-1 text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-          Status: Completed
-        </span>
-      </div>
-    </li>
-
-    <li className="flex items-center gap-4 border-b pb-4">
-      <img
-        src="https://randomuser.me/api/portraits/women/44.jpg"
-        alt="Sara Ahmed"
-        className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500"
-      />
-      <div>
-        <p className="font-semibold text-lg text-gray-700">Sara Ahmed</p>
-        <p className="text-sm text-gray-500">Date: 27 July 2025</p>
-        <span className="inline-block mt-1 text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-          Status: Completed
-        </span>
-      </div>
-    </li>
-
-    {/* Add more patients if needed */}
-  </ul>
-</div>
-
-      
     </div>
   );
 };

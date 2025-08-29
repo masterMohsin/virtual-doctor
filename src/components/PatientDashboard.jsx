@@ -57,7 +57,7 @@ const PatientDashboard = () => {
         const res = await axios.get(`${url}/api/users/get-patient`,{
           withCredentials : true
         })
-        console.log(res.data.patient.name);
+        console.log(res.data.patient);
         
         if(res.data.success) {
           setUserData(res.data.patient);
@@ -146,7 +146,7 @@ const PatientDashboard = () => {
           {/** profile card */}
           <div className="profile -z-10 w-full md:w-[25rem]  absolute rounded-b-2xl md:rounded-2xl top-0 h-42 md:h-60 md:top-4 bg-[#5852F2] md:relative flex justify-evenly items-center text-white ">
             <div className="mt-4 md:text-center mb-2">
-              <p>Hi {userData?.fullName}</p>
+              <p>Hi {userData?.fullName || userData?.name}</p>
               <p className="font-semibold text-3xl md:text-lg sm:text-xl">Find Your Doctor</p>
               
             </div>

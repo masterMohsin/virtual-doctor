@@ -7,18 +7,18 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
- 
-
- 
-
   useEffect(() => {
+    // Safe parsing: fallback to null if nothing in localStorage
     const storedUser = localStorage.getItem("user");
-    
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    } catch (err) {
+      console.error("Error parsing user from localStorage:", err);
+      setUser(null);
     }
   }, []);
 
+  // Example login function (optional)
   // const userLogin = (email, password) => {
   //   let user = null;
   //   if (email === "doctor@example.com" && password === "123") {
@@ -36,12 +36,11 @@ export const AuthProvider = ({ children }) => {
   // };
 
   const logout = () => {
-  setUser(null);
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
   };
-
 
   return (
     <AuthContext.Provider value={{ user, logout }}>

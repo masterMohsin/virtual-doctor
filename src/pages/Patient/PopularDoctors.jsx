@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../api/api.js";
 
 const StarRating = ({ rating }) => {
   const fullStars = Math.round(rating);
@@ -20,49 +20,49 @@ const StarRating = ({ rating }) => {
 const PopularDoctors = () => {
   const navigate = useNavigate();
   const [doctorsData, setDoctorsData] = useState([]);
-  const url = import.meta.env.VITE_API_URL;
 
   // ✅ Fetch all doctors (with favourite info from backend)
   const getAllDoctors = async () => {
     try {
-      const res = await axios.get(`${url}/api/users/get-doctors`, {
-        withCredentials: true,
-      });
+      const res = await API.get('/users/get-doctors');
+      console.log(res.data.doctors);
+      
       if (res.data.success) {
-        // Backend must return `isFavourite` per doctor
+
+        localStorage.setItem('popularDoctors', JSON.stringify(res.data.doctors));
+        // Backend returns doctors with isFavorite field
         setDoctorsData(res.data.doctors);
+        // Update the isFavorite field for each doctor
+        const updatedDoctors = res.data.doctors.map((doctor) => ({
+          ...doctor,
+          isFavorite: false, // Set to false initially
+        }));
+        setDoctorsData(updatedDoctors);
       }
     } catch (error) {
-      console.log("Error fetching doctors:", error.message);
+      console.log("Error fetching doctors:", error.response?.data || error.message);
     }
   };
 
   // ✅ Toggle favourite (only clicked doctor changes)
-const toggleFavorite = async (doctorId) => {
-  try {
-    const res = await axios.post(
-      `${url}/api/patients/add-favourites`,
-      { doctorId },   // ✅ make sure doctorId is sent
-      { withCredentials: true }
-    );
+  const toggleFavorite = async (doctorId) => {
+    try {
+      const res = await API.post('/patients/add-favourites', { doctorId });
 
-    if (res.data.success) {
-      setDoctorsData((prev) =>
-        prev.map((doc) =>
-          doc.id === doctorId ? { ...doc, isFavorite: res.data.isFavorite } : doc
-        )
-      );
+      if (res.data.success) {
+        setDoctorsData((prev) =>
+          prev.map((doc) =>
+            doc.id === doctorId ? { ...doc, isFavorite: res.data.isFavorite } : doc
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating favourite:", error.response?.data || error.message);
     }
-  } catch (error) {
-    console.error("Error updating favourite:", error.response?.data || error.message);
-  }
-};
-
-
-
-  useEffect(() => {
-    getAllDoctors();
-  }, []);
+  };
+useEffect(() => {
+  getAllDoctors();
+}, []);
 
   const handleVerify = (doctorId) => {
     navigate(`/patient/popular-doctors/${doctorId}`);
@@ -80,7 +80,7 @@ const toggleFavorite = async (doctorId) => {
           >
             <figure>
               <img
-                src={doctor?.profileImage}
+                src={doctor?.profileImage || "/imgs/default-doctor.jpg"}
                 alt={doctor?.fullName}
                 className="w-28 h-28 object-cover cursor-pointer rounded-md mx-auto"
               />
@@ -93,32 +93,31 @@ const toggleFavorite = async (doctorId) => {
                 {doctor?.specialization}
               </p>
               <div className="flex flex-col md:flex-row justify-between items-center w-full mt-2">
-                <StarRating rating={doctor?.rating || 0} />
+                <StarRating rating={4.5} />
                 <p className="text-xs text-gray-400 mt-1 md:mt-0 md:ml-2">
                   <span className="font-bold text-lg text-[#333333]">
-                    {doctor?.rating || 0}
+                    4.5
                   </span>{" "}
-                  ({doctor?.yearsOfExperience} yrs exp.)
+                  ({doctor?.yearsOfExperience || 0} yrs exp.)
                 </p>
               </div>
             </div>
 
             {/* ❤️ Button */}
             <button
-  className="absolute top-3 right-3 cursor-pointer"
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleFavorite(doctor?.id); // ✅ use doctor.id from backend
-  }}
-  aria-label={doctor.isFavorite ? "Remove from favorites" : "Add to favorites"}
->
-  {doctor?.isFavorite ? (
-    <FaHeart className="text-red-500" />
-  ) : (
-    <FaRegHeart className="text-gray-400" />
-  )}
-</button>
-
+              className="absolute top-3 right-3 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(doctor?.id);
+              }}
+              aria-label={doctor.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              {doctor?.isFavorite ? (
+                <FaHeart className="text-red-500" />
+              ) : (
+                <FaRegHeart className="text-gray-400" />
+              )}
+            </button>
           </div>
         ))}
       </div>
@@ -127,51 +126,3 @@ const toggleFavorite = async (doctorId) => {
 };
 
 export default PopularDoctors;
-
-
-
-
-// {doctors.map((doc) => (
-//           <div
-//             onClick={() => handleVerify(doc.id)}
-//             key={doc.id}
-//             className="bg-white shadow-md rounded-xl p-4 flex flex- sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 relative hover:scale-105 cursor-pointer duration-200 transition-all"
-//           >
-//             <figure >
-//               <img
-//                 src={doc.image}
-//                 alt={doc.name}
-//                 className="w-28 h-28 object-cover cursor-pointer rounded-md mx-auto"
-//               />
-//             </figure>
-//             <div className="flex flex-col gap-2 flex-1 items-center sm:items-start">
-//               <h3 className="text-lg md:text-2xl font-semibold text-center sm:text-left">{doc.name}</h3>
-//               <p className="text-gray-500 text-sm md:text-md font-semibold text-center sm:text-left">{doc.specialty}</p>
-//               <div className="flex flex-col md:flex-row justify-between items-center w-full mt-2">
-//                 <StarRating rating={doc.rating} />
-//                 <p className="text-xs text-gray-400 mt-1 md:mt-0 md:ml-2">
-//                   <span className="font-bold text-lg text-[#333333]">
-//                     {doc.rating}
-//                   </span> ({doc.views} views)
-//                 </p>
-//               </div>
-//             </div>
-//             <button
-//               className="absolute top-3 right-3"
-//               onClick={(e) => {
-//                 e.stopPropagation(); // Prevent navigate on click
-//                 toggleFavorite(doc.id);
-//               }}
-//             >
-//               {doc.favorite ? (
-//                 <FaHeart className="text-red-500" />
-//               ) : (
-//                 <FaRegHeart className="text-gray-400" />
-//               )}
-//             </button>
-//           </div>
-//         ))}
-
-
-
-// ...existing code...
